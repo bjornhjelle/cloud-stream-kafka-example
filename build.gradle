@@ -1,0 +1,74 @@
+buildscript {
+	ext {
+		springBootVersion = '2.0.0.M7'
+	}
+	repositories {
+		mavenCentral()
+		maven { url "https://repo.spring.io/snapshot" }
+		maven { url "https://repo.spring.io/milestone" }
+	}
+	dependencies {
+		classpath("org.springframework.boot:spring-boot-gradle-plugin:${springBootVersion}")
+		classpath group: 'org.apache.avro', name: 'avro-tools', version: '1.8.2'
+	}
+}
+
+apply plugin: 'java'
+apply plugin: 'eclipse'
+apply plugin: 'org.springframework.boot'
+apply plugin: 'io.spring.dependency-management'
+
+ext {
+    confluentVersion = '3.3.1'
+}
+
+group = 'com.example'
+version = '0.0.1-SNAPSHOT'
+sourceCompatibility = 1.8
+
+repositories {
+	mavenCentral()
+	maven { url "https://repo.spring.io/milestone" }
+    maven { url "https://repo.spring.io/snapshot" }
+    maven { url "http://packages.confluent.io/maven/" }
+}
+
+
+ext {
+	springCloudVersion = 'Finchley.M5'
+}
+
+
+configurations {
+    compile.exclude module: "slf4j-log4j12"
+//    compile.exclude group: "log4j", module: "log4j"
+}
+
+
+
+dependencies {
+	compile('org.springframework.cloud:spring-cloud-stream-binder-kafka')
+    compile('org.springframework.cloud:spring-cloud-stream-schema')
+    compile('org.apache.avro:avro:1.8.2')
+    compile "io.confluent:kafka-avro-serializer:$confluentVersion"
+    compile group: 'org.apache.kafka', name: 'kafka-clients', version: '0.11.0.0-cp1'
+
+    testCompile('org.springframework.boot:spring-boot-starter-test')
+}
+
+dependencyManagement {
+	imports {
+		mavenBom "org.springframework.cloud:spring-cloud-dependencies:${springCloudVersion}"
+	}
+}
+
+task generateAvroSchema(){
+	String[] args = ["compile", "schema"
+					 , "${projectDir}/src/avro_schemas/avro_message.avsc"
+					 , "${projectDir}/src/main/java"].toArray()
+	new org.apache.avro.tool.Main()."run"(args)
+}
+
+
+
+compileJava.dependsOn(processResources)

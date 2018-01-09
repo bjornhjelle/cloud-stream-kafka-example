@@ -1,0 +1,23 @@
+spring:
+  cloud:
+    stream:
+       default:
+         contentType: avro/bytes
+       bindings:
+         testTopic:
+           destination: test-topic
+           group: consumer-group
+           durableSubscription: true
+       kafka:
+           bindings:
+             testTopic:
+               consumer.configuration.value.deserializer: io.confluent.kafka.serializers.KafkaAvroDeserializer
+               consumer.configuration.key.deserializer: org.apache.kafka.common.serialization.StringDeserializer
+               consumer.configuration.specific.avro.reader: true
+               consumer.configuration.schema.registry.url: http://localhost:8081
+           binder:
+             brokers: http://localhost:9092
+             schema.registry.url: http://localhost:8081
+             zkNodes:  localhost:2181
+             configuration:
+               schema.registry.url: http://localhost:8081
